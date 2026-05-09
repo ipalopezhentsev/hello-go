@@ -7,6 +7,6 @@ vet: fmt
 run: vet
 	go run .
 build: vet
-	go build
+	go build -o dist/hello
 clean:
 	go clean

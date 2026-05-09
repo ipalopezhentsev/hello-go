@@ -13,18 +13,18 @@ const (
 )
 
 func main() {
-	//testPrimitives()
-	//testSlices()
-	//testSlicesOfSlices()
-	//testStrings()
-	//testMaps()
+	testPrimitives()
+	testSlices()
+	testSlicesOfSlices()
+	testStrings()
+	testMaps()
 	testSets()
 }
 
 func testPrimitives() {
 	fmt.Println(f())
 
-	fmt.Printf("Speed of sound is %d\n", 300_000)
+	fmt.Printf("Speed of sound is %d m/s\n", 343)
 	fmt.Printf(`Speed of sound is 
 	!!!!DRUM ROLL!!!
 	%d
@@ -39,25 +39,29 @@ func testPrimitives() {
 	var a1 int8 = 1
 	var a2 int16 = 32767
 	var a3 int32 = int32(int16(a1) + a2)
-	fmt.Printf("a1+a2=%d\n", a3)
+	fmt.Println("a1+a2 =", a3)
 
 	if a1 == 1 {
-		fmt.Print("a1 is really 1!\n")
+		fmt.Println("a1 is really 1!")
 	}
 
 	const x int32 = 10
 	//	x++
 
-	fmt.Printf("package level a=%d\n", a)
+	fmt.Println("package level a =", a)
 
-	//this is array!
+	//this is array! it cannot grow
 	var y = [...]int{1, 2, 3}
-	//this is NOT array! it's a slice!
+	//this is array too:
+	// var y = [3]int{1, 2, 3}
+	//this is NOT array! it's a slice! it can grow
 	c := []int{1, 2, 3}
-	fmt.Printf("slice: %v\n", c)
+	fmt.Println("slice:", c)
+	//go-like format:
 	fmt.Printf("array: %#v\n", y)
+	fmt.Printf("array: %v\n", y)
 	var i = 2
-	q1, q2 := fmt.Printf("Out of bounds: %d\n", y[i])
+	q1, q2 := fmt.Println("Out of bounds:", y[i])
 	var q3 = 10
 	fmt.Printf("%v %v %d\n", q1, q2, q3)
 
@@ -65,53 +69,55 @@ func testPrimitives() {
 	// fmt.Printf("%v", huge)
 
 	var qqq = [...]int{1, 2, 3}
-	fmt.Printf("Two arrays are equal? %v\n", y == qqq)
+	fmt.Println("Two arrays are equal? yes -", y == qqq)
 	//doesn't compile! different type, slices can be compared only with null, without helpers
-	//fmt.Printf("Two arrays are equal? %v\n", c == qqq)
+	//fmt.Println("Two arrays are equal?", c == qqq)
 
 	t1 := [2][3]int{{1, 2, 3}, {4, 5, 6}}
-	fmt.Printf("matrix: %v\n", t1)
-	fmt.Printf("Len of array: %v\n", len(t1))
+	fmt.Println("matrix:", t1)
+	fmt.Println("Len of array:", len(t1))
 }
 
 func testSlices() {
+	//nil slice: (slices and maps are always pointers, unlike structs)
 	var slice1 []int
 	var slice2 []int = []int{1, 2}
 	//doesn't compile
-	//fmt.Printf("Two empty slices equal? %v", slice1 == slice2)
-	fmt.Printf("Slice is nil? %v\n", slice1 == nil)
-	fmt.Printf("Slice is nil? %v\n", slice2 == nil)
+	//fmt.Printf("Two slices equal? %v", slice1 == slice2)
+	fmt.Println("Slice1 is nil? yes -", slice1 == nil)
+	fmt.Println("Slice2 is nil? no - ", slice2 == nil)
 	//var iv = slice1[0]
 	//yes
 	//fmt.Printf("Panic? %v", iv)
 	//only comparing of slices:
-	fmt.Printf("Equal via slices.Equal? %v\n", slices.Equal([]int{1, 2}, slice2))
+	fmt.Println("Equal via slices.Equal?", slices.Equal([]int{1, 2}, slice2))
 	var nilSlice []int
-	fmt.Printf("Len of nil slice should be 0: %v\n", len(nilSlice))
+	fmt.Println("Len of nil slice should be 0:", len(nilSlice))
 
-	fmt.Printf("Appending to nil slice: %v\n", append(nilSlice, 1))
-	fmt.Printf("Did this change source slice? no: %v\n", nilSlice)
+	fmt.Println("Appending to nil slice:", append(nilSlice, 1))
+	fmt.Println("Did this change source slice? no:", nilSlice)
 	nilSlice = append(nilSlice, 1)
-	fmt.Printf("And now? yes: %v\n", nilSlice)
-	//can we use append without assignment?
+	fmt.Println("And now? yes:", nilSlice)
+	//can we use append without assignment? no
 	//append(nilSlice, 2)
 	nilSlice = append(nilSlice, []int{3, 4, 5}...)
-	fmt.Printf("Appending another slice: %v\n", nilSlice)
+	fmt.Println("Appending another slice:", nilSlice)
 
 	//make
 
 	//both capacity=5 and length(!)=5, filled with zeroes, appending adds 6th element!
 	s := make([]int, 5)
 	s = append(s, 1)
-	fmt.Printf("len(s) is 6!: %v\n", len(s))
+	fmt.Println("len(s) is 6!:", len(s))
+	//capacity 5 and length 0:
 	s1 := make([]int, 0, 5)
 	s1 = append(s1, 1)
 	fmt.Printf("s1 has len 1! %v, cap=%v\n", s1, cap(s1))
 	//clear sets to 0 and keeps the len!
 	clear(s1)
-	fmt.Printf("s1 still has len 1: %v\n", s1)
+	fmt.Println("s1 still has len 1:", s1)
 
-	//slice comparison
+	//slice comparison (== allows only comparison with nil)
 
 	//bizarre:
 	var nilSlice1 []int
@@ -119,9 +125,9 @@ func testSlices() {
 	fmt.Printf("nilSlice1 0/0: len=%v, cap=%v\n", len(nilSlice1), cap(nilSlice1))
 	fmt.Printf("emptySlice 0/0: len=%v, cap=%v\n", len(emptySlice), cap(emptySlice))
 	//they are both 0/0 but are UNEQUAL:
-	fmt.Printf("nilSlice1 == emptySlice: %v\n", nil == emptySlice)
+	fmt.Println("nilSlice1 == emptySlice:", nil == emptySlice)
 	//doesn't compile:
-	// fmt.Printf("nilSlice1 == emptySlice: %v", nilSlice1 == emptySlice)
+	// fmt.Println("nilSlice1 == emptySlice:", nilSlice1 == emptySlice)
 
 	//copying:
 	a := []int{1, 2, 3, 4}
@@ -130,17 +136,22 @@ func testSlices() {
 	copy(b, a[:2])
 	b1 := make([]int, 2)
 	copy(b1, a[:2])
-	fmt.Printf("b should still be empty: %v\n", b)
-	fmt.Printf("b1 should be [1,2]: %v\n", b1)
+	fmt.Println("b should still be empty:", b)
+	fmt.Println("b1 should be [1,2]:", b1)
 
 	//conversions
 
-	//arr->slice - inherits capacity
+	//arr->slice - inherits capacity/backing storage
 	arr := [...]int{1, 2, 3}
 	slice := arr[:]
 	slice[0] = 10
 	fmt.Printf("arr is now [10 2 3]: %v, slice is too: %v\n", arr, slice)
 	fmt.Printf("Capacity of slice should match length of array (%v): %v\n", len(arr), cap(slice))
+	slice = append(slice, 20)
+	//but now slices' buffer has been reallocated, it no longer modified parent array:
+	slice[1] = 100
+	fmt.Println("arr is still [10 2 3]:", arr)
+	fmt.Println("slice is now [10 100 3 20]:", slice)
 
 	//slice->arr - materializes slice to independent copy
 	sl1 := []int{1, 2, 3}
@@ -148,37 +159,39 @@ func testSlices() {
 	ar1 := [2]int(sl1)
 	//doesn't touch sl1:
 	ar1[0] = 10
-	fmt.Printf("sl1 should be [1,2,3]: %v\n", sl1)
-	fmt.Printf("ar1 should be [10,2]: %v\n", ar1)
+	fmt.Println("sl1 should be [1,2,3]:", sl1)
+	fmt.Println("ar1 should be [10,2]:", ar1)
 }
 
 func testSlicesOfSlices() {
 	srcSlice := []int{1, 2, 3}
 	subSlice := srcSlice[1:2]
-	fmt.Printf("Subslice is '[2]': %v\n", subSlice)
+	fmt.Println("Subslice is '[2]':", subSlice)
+	//will modify parent buffer!
 	subSlice[0] = 5
-	fmt.Printf("Subslice is '[5]': %v\n", subSlice)
-	fmt.Printf("Parent subslice is '[1,5,3]': %v\n", srcSlice)
-	//appending to subslice will reuse capacity of parent slice!
+	fmt.Println("Subslice is '[5]':", subSlice)
+	fmt.Println("Parent subslice is '[1,5,3]'", srcSlice)
+	//appending to subslice will reuse capacity of parent slice, if there is some space!
 	fmt.Printf("Subslice: len(1)=%v, cap(2)=%v\n", len(subSlice), cap(subSlice))
-	qqq := append(subSlice, 10)
-	//this modified parent slice!
-	fmt.Printf("Parent slice is now [1,5,10]: %v\n", srcSlice)
-	fmt.Printf("qqq slice is now [5,10]: %v\n", qqq)
-	//qqq is out of capacity of parent slice! so next append 'unties' it from parent slice!
-	qqq = append(qqq, 11)
-	fmt.Printf("qqq is now disconnected from parent slice=%v\n", qqq)
-	fmt.Printf("srcSlice is disconnected from qqq and is still [1,5,10]=%v\n", srcSlice)
+	subSlice = append(subSlice, 10)
+	//this modified parent slice! because subSlice capacity was 2
+	fmt.Println("Parent slice is now [1,5,10]:", srcSlice)
+	fmt.Println("subSlice slice is now [5,10]:", subSlice)
+	//subSlice is out of capacity of parent slice! so next append 'unties' it from parent slice!
+	subSlice = append(subSlice, 11)
+	fmt.Println("subSlice is now disconnected from parent slice:", subSlice)
+	fmt.Println("srcSlice is disconnected from subSlice and is still [1,5,10]:", srcSlice)
 
 	//full slice expressions:
 	srcSlice2 := []int{1, 2, 3}
 	//by last '2' we tell that index 2 of parent capacity is already the end of this slice
 	subSlice1 := srcSlice2[1:2:2]
-	//so this is gonna reallocate capacity just for the slice:
+	//so this is gonna reallocate capacity on first append:
 	subSlice1 = append(subSlice1, 5)
+	subSlice1[0] = 100
 	//so this has no effect on parent slice:
-	fmt.Printf("subSlice1 is [2,5]=%v\n", subSlice1)
-	fmt.Printf("Parent slice is unchanged [1,2,3]: %v\n", srcSlice2)
+	fmt.Println("subSlice1 is [100,5]", subSlice1)
+	fmt.Println("Parent slice is unchanged [1,2,3]:", srcSlice2)
 }
 
 func testStrings() {
@@ -189,17 +202,22 @@ func testStrings() {
 	//len returns in bytes, not code points
 
 	//2:
-	fmt.Printf("len(sRus): %v\n", len(sRus))
+	fmt.Println("len(sRus):", len(sRus))
 	//1:
-	fmt.Printf("len(sRus): %v\n", len(sEng))
+	fmt.Println("len(sRus):", len(sEng))
 
 	//but subscript ("slice") returns bytes not code points!
 	garbage := sRus[0]
-	fmt.Printf("garbage and not %v: %v\n", sRus, garbage)
+	fmt.Printf("garbage and not %v: %v\n", sRus, string(garbage))
 
 	sRusBytes := []byte(sRus)
 	sRusRunes := []rune(sRus)
 	fmt.Printf("sRusBytes=%v, sRusRunes=%v\n", sRusBytes, sRusRunes)
+
+	//but for range iterates over runes! and i will show byte offset from beginning:
+	for i, r := range "йц" {
+		fmt.Println("At idx", i, "rune", r, "symbol", string(r))
+	}
 }
 
 func testMaps() {
@@ -207,37 +225,56 @@ func testMaps() {
 		"key1":             {1, 2, 3},
 		"key2":             {2, 3},
 		"keyWithZeroValue": {},
+		"keyWithNilValue":  nil,
 	}
-	fmt.Printf("Map: %v\n", m)
-	fmt.Printf("m[key1]=%v\n", m["key1"])
-	fmt.Printf("m[missing]=%v\n", m["missing"])
+	fmt.Println("Map:", m)
+	fmt.Println("m[key1] =", m["key1"])
+	fmt.Println("m[missing] =", m["missing"])
+	fmt.Println("m[missing]==nil? yes:", m["missing"] == nil)
+	fmt.Println("m[keyWithZeroValue]==nil? no!:", m["keyWithZeroValue"] == nil)
+	fmt.Println("m[keyWithNilValue]==nil? yes!:", m["keyWithNilValue"] == nil)
 
-	//having append to be a function allows it not to fail on nulls in java terms:
+	//having append as a function allows it not to fail on nulls in java terms:
 	q := append(m["missing"], 1)
-	fmt.Printf("Appended to missing key's value: %v\n", q)
+	fmt.Println("Appended to missing key's value:", q)
 	//but has it changed the map? no!
-	fmt.Printf("m[missing] again=%v\n", m["missing"])
+	fmt.Println("m[missing] again =", m["missing"])
 	m["missing"] = q
 	//and now yes:
-	fmt.Printf("m[missing] after direct update=%v\n", m["missing"])
+	fmt.Println("m[missing] after direct update =", m["missing"])
 
 	//values for missing key and for key with zero value are indisinguishable by simple indexing:
-	zeroValueForNonExistingKey := m["qqq"]
-	var emptySlice []int
-	fmt.Printf("Missing equals zero val? yes: %v\n", slices.Equal(zeroValueForNonExistingKey, []int{}))
-	fmt.Printf("Missing equals emptySlice? yes: %v\n", slices.Equal(zeroValueForNonExistingKey, emptySlice))
-	fmt.Printf("Is zeroVal nil? yes: %v\n", zeroValueForNonExistingKey == nil)
-	fmt.Printf("Is emptySlice nil? yes: %v\n", emptySlice == nil)
+	nilValueForNonExistingKey := m["qqq"]
+	var nilSlice []int
+	fmt.Println("Missing equals zero val? yes:", slices.Equal(nilValueForNonExistingKey, []int{}))
+	fmt.Println("Missing equals nilSlice? yes:", slices.Equal(nilValueForNonExistingKey, nilSlice))
+	fmt.Println("Is nilValueForNonExistingKey nil? yes:", nilValueForNonExistingKey == nil)
+	fmt.Println("Is nilSlice nil? yes:", nilSlice == nil)
 	reallyExistingZeroValue := m["keyWithZeroValue"]
-	//this is just stupid go thing where []int (nil) is not same as []int{}:
-	fmt.Printf("reallyExistingZeroValue same as nil? NO!: %v\n", reallyExistingZeroValue == nil)
+	//this is just go thing where []int (nil) is not same as []int{}
+	//because maps and arrays are pointers and so zero array is not the same as null pointer (nil):
+	fmt.Println("reallyExistingZeroValue same as nil? NO!:", reallyExistingZeroValue == nil)
 	//but they are both empty:
-	fmt.Printf("reallyExistingZeroValue equals to nil? YES!: %v\n", slices.Equal(reallyExistingZeroValue, nil))
-	//(so with value type being a slice does not fully allow to show this, but simple int would)
+	fmt.Printf("reallyExistingZeroValue slices.Equals to nil? YES!: %v\n", slices.Equal(reallyExistingZeroValue, nil))
+	//(so with value type being a slice it does not fully allow to show this, but simple int would)
+	//let's quickly demo with int map:
+	{
+		m := map[string]int{
+			//this value will be indistinguishable from value of a missing key without comma ok idiom:
+			"1": 0,
+			"2": 2,
+		}
+		fmt.Println("m[1] is 0:", m["1"])
+		fmt.Println("And m[100] is 0:", m["100"])
+		existingZero, ok := m["1"]
+		fmt.Println("But using comma idiom we can distinguish: existingZero =", existingZero, ", ok(true) =", ok)
+		nonExistingZero, ok := m["100"]
+		fmt.Println("nonExistingZero =", nonExistingZero, ", ok(false) =", ok)
+	}
 
 	//comma ok idiom allows to do 'contains key' semantic:
-	zeroValueForNonExistingKey, ok := m["qqq"]
-	fmt.Printf("qqq key does not exist - yes: %v (value %v)\n", !ok, zeroValueForNonExistingKey)
+	nilValueForNonExistingKey, ok := m["qqq"]
+	fmt.Printf("qqq key does not exist - yes: %v (value %v)\n", !ok, nilValueForNonExistingKey)
 	//note that ":=" still works despite we already used "ok"!
 	//because the rule is it's permitted if there are NEW variables
 	//in the left part and we have a new var in addition to "ok"!
@@ -248,41 +285,40 @@ func testMaps() {
 
 	//map doesn't have cap because it's not open addressing but bucket-based:
 	//fmt.Printf("cap(m): %v, len(m): %v", cap(m), len(m))
-	fmt.Printf("len(m)=4: %v\n", len(m))
+	fmt.Println("len(m)=5:", len(m))
 
 	//preallocating a map length - it will be 0 length but will have enough space to hold 1000 elems without rehashing:
 	preallocatedMap := make(map[int]string, 1000)
-	fmt.Printf("preallocatedMap len(1000)=%v\n", len(preallocatedMap))
+	fmt.Println("preallocatedMap len(0) =", len(preallocatedMap))
 
-	//maps are not comparable:
-	m1 := map[int]string{1: "1"}
-	m2 := map[int]string{1: "1"}
+	//maps are not comparable without helpers:
+	m1 := map[int]string{1: "1", 2: "2"}
+	m2 := map[int]string{1: "1", 2: "2"}
 	//doesn't compile:
 	// fmt.Printf("m1==m2: %v", m1 == m2)
-	fmt.Printf("m1 .Equal m2 - YES: %v\n", maps.Equal(m1, m2))
+	fmt.Println("m1 maps.Equal m2 - YES:", maps.Equal(m1, m2))
 
 	//deletion:
 	delete(m1, 1)
-	fmt.Printf("m1 is now empty: %v\n", m1)
+	fmt.Println("m1 is now {2: 2}:", m1)
 
 	//clear clears all:
 	clear(m2)
-	fmt.Printf("m2 is empty too: %v\n", m2)
+	fmt.Println("m2 is empty:", m2)
 }
 
 func testSets() {
-	//set via dummy bool - takes extra byte for bool but easy to use:
+	//set via dummy 'true' bool value - takes extra byte for bool but easy to use:
 	s := map[int]bool{1: true, 100: true}
-	fmt.Printf("s has 1 and 100: %v\n", s[1] && s[100])
-	fmt.Printf("s doesn't have 2: %v\n", !s[2])
+	fmt.Println("s has 1 and 100:", s[1] && s[100])
+	fmt.Println("s doesn't have 2:", !s[2])
 
 	//set via values of type "empty struct" - doesn't take space for vals but clumsier to use:
 	// s1 := map[int]struct{}{1: struct{}{}, 100: struct{}{}}
 	//shorter form:
 	s1 := map[int]struct{}{1: {}, 100: {}}
 	_, ok := s1[1]
-	fmt.Printf("s1 has 1: %v\n", ok)
+	fmt.Println("s1 has 1:", ok)
 	_, ok = s1[2]
-	fmt.Printf("s1 doesn't have 2: %v\n", !ok)
-
+	fmt.Println("s1 doesn't have 2:", !ok)
 }
