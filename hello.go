@@ -13,12 +13,12 @@ const (
 )
 
 func main() {
-	testPrimitives()
-	testSlices()
-	testSlicesOfSlices()
-	testStrings()
+	// testPrimitives()
+	//testSlices()
+	// testSlicesOfSlices()
+	// testStrings()
 	testMaps()
-	testSets()
+	// testSets()
 }
 
 func testPrimitives() {
@@ -79,7 +79,8 @@ func testPrimitives() {
 }
 
 func testSlices() {
-	//nil slice: (slices and maps are always pointers, unlike structs)
+	//nil slice: (technically slice is always a struct {pointer to backing store, len, cap} so not nil pointer,
+	//it's not a pointer (unlike map!), but in comparison it acts like real nil)
 	var slice1 []int
 	var slice2 []int = []int{1, 2}
 	//doesn't compile
@@ -161,6 +162,36 @@ func testSlices() {
 	ar1[0] = 10
 	fmt.Println("sl1 should be [1,2,3]:", sl1)
 	fmt.Println("ar1 should be [10,2]:", ar1)
+
+	//proof that slices are structs and are passed by value, so any addition
+	//(even if within capacity!) has no effect outside!
+	doOnArr := func(arr []int) {
+		arr[0] = 100
+		arr = append(arr, 200)
+		//here it changed a !copy! of slice struct - even if there was capacity and it did not
+		//reallocate backing store, it had to change the struct's len !field! - it will be invisible
+		//to outside caller if we don't return the new value!
+	}
+	//cap=100
+	a = make([]int, 0, 100)
+	a = append(a, 1, 2, 3)
+	//will pass a copy of a struct having three fields: pointer to storage, and len and cap ints
+	doOnArr(a)
+	//doOnArr will make only one change visible to us: change first element, because the copy's
+	//storage pointer will initially be pointing at the same storage as ours:
+	fmt.Println("After function doOnArr updates a, only first element changes to 100, 200 is not appended", a)
+
+	//now repeat the same on pointers:
+	doOnArrPtr := func(arr *[]int) {
+		(*arr)[0] = 100
+		//this will change memory to which pointer points, i.e. to original struct
+		*arr = append(*arr, 200)
+	}
+	a = make([]int, 0, 100)
+	a = append(a, 1, 2, 3)
+	doOnArrPtr(&a)
+	//so the outer function sees the append:
+	fmt.Println("After function doOnArrPtr updates memory pointed by pointer, parent func will see the appended 200:", a)
 }
 
 func testSlicesOfSlices() {
@@ -252,12 +283,11 @@ func testMaps() {
 	fmt.Println("Is nilSlice nil? yes:", nilSlice == nil)
 	reallyExistingZeroValue := m["keyWithZeroValue"]
 	//this is just go thing where []int (nil) is not same as []int{}
-	//because maps and arrays are pointers and so zero array is not the same as null pointer (nil):
 	fmt.Println("reallyExistingZeroValue same as nil? NO!:", reallyExistingZeroValue == nil)
 	//but they are both empty:
 	fmt.Printf("reallyExistingZeroValue slices.Equals to nil? YES!: %v\n", slices.Equal(reallyExistingZeroValue, nil))
 	//(so with value type being a slice it does not fully allow to show this, but simple int would)
-	//let's quickly demo with int map:
+	//let's do quick demo with int map:
 	{
 		m := map[string]int{
 			//this value will be indistinguishable from value of a missing key without comma ok idiom:
@@ -305,6 +335,19 @@ func testMaps() {
 	//clear clears all:
 	clear(m2)
 	fmt.Println("m2 is empty:", m2)
+
+	//unlike slices, maps are not structs but pointers and therefore allow adding inside function:
+	doOnMap := func(m map[string]int) {
+		m["1"] = 100
+		m["100"] = 100
+	}
+	mm := map[string]int{
+		"1": 1,
+		"2": 2,
+	}
+	//will pass a copy of !pointer! so everything done inside the func will be visible outside
+	doOnMap(mm)
+	fmt.Println("mm modified by function, should be [1:100, 2:2, 100:100]", mm)
 }
 
 func testSets() {
