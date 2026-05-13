@@ -13,12 +13,12 @@ const (
 )
 
 func main() {
-	// testPrimitives()
-	//testSlices()
-	// testSlicesOfSlices()
-	// testStrings()
+	testPrimitives()
+	testSlices()
+	testSlicesOfSlices()
+	testStrings()
 	testMaps()
-	// testSets()
+	testSets()
 }
 
 func testPrimitives() {

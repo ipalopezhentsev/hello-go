@@ -8,5 +8,7 @@ run: vet
 	go run .
 build: vet
 	go build -o dist/hello
+test: build
+	go test
 clean:
 	go clean
